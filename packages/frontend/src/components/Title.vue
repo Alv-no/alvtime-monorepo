@@ -19,6 +19,8 @@ export default Vue.extend({
         return "Select Favorite Tasks";
       if (this.$store.state.currentRoute.name === "tokens")
         return "Personal access tokens";
+      if (this.$store.state.currentRoute.name === "summarizedhours")
+        return "Statistikk";
       // @ts-ignore
       const screenSize = this.$mq;
       if (screenSize === "sm") return this.day;

@@ -57,6 +57,7 @@ export default Vue.extend({
         { text: "Timeføring", routeName: "hours" },
         { text: "Favorittaktiviteter", routeName: "tasks" },
         { text: "Overtid og avspasering", routeName: "accumulated-hours" },
+        { text: "Statistikk", routeName: "summarizedhours" },
         { text: "Personal access tokens", routeName: "tokens" },
       ],
     };
@@ -95,8 +96,8 @@ export default Vue.extend({
     },
 
     navToAdminpanel() {
-      window.open(config.BASE_URL_ADMINPANEL + '/adminpanel');
-    }
+      window.open(config.BASE_URL_ADMINPANEL + "/adminpanel");
+    },
   },
 });
 </script>
