@@ -12,7 +12,7 @@
       </md-table-row>
       <md-table-row v-for="row in monthSumPrTask" :key="row.id">
         <md-table-cell>{{
-          row[0] ? row[0].project.name + " - " + row[0].name : "hei"
+          row[0] ? row[0].project.name + " - " + row[0].name : "Missing name"
         }}</md-table-cell>
         <md-table-cell
           v-for="element in row.slice(1, 4)"
