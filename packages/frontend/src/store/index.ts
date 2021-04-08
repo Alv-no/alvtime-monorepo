@@ -47,6 +47,7 @@ const getters = {
   ...swiper.getters,
   ...auth.getters,
   ...overtime.getters,
+  ...timeEntrie.getters,
 };
 
 const actions = {
