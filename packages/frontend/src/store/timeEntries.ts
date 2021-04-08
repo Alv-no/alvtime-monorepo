@@ -232,7 +232,6 @@ function updateTimeEntries(state: State, paramEntries: FrontendTimentrie[]) {
     newTimeEntriesMap = updateTimeEntrieMap(newTimeEntriesMap, paramEntrie);
   }
   state.timeEntriesMap = { ...state.timeEntriesMap, ...newTimeEntriesMap };
-<<<<<<< HEAD
 
   let newTimeEntries = state.timeEntries ? [...state.timeEntries] : [];
   for (const paramEntrie of paramEntries) {
@@ -341,12 +340,4 @@ function monthSumPrTask(
     return x;
   });
   return finalValues;
-=======
-
-  let newTimeEntries = state.timeEntries ? [...state.timeEntries] : [];
-  for (const paramEntrie of paramEntries) {
-    newTimeEntries = updateArrayWith(newTimeEntries, paramEntrie);
-  }
-  state.timeEntries = newTimeEntries;
->>>>>>> master
 }
