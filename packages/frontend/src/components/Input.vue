@@ -4,6 +4,7 @@
     :class="{ error }"
     :value="value"
     :placeholder="placeholder"
+    :type="type"
     @input="update"
   />
 </template>
@@ -23,6 +24,10 @@ export default Vue.extend({
     error: {
       type: Boolean,
       default: false,
+    },
+    type: {
+      type: String,
+      default: "text",
     },
   },
 

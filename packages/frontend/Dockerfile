@@ -1,4 +1,4 @@
-FROM node:13.5 as dev
+FROM node:14.15 as dev
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -38,10 +38,7 @@ COPY . .
 CMD sh
 
 FROM dev as build
-ARG VUE_APP_API_HOST
-ARG VUE_APP_ACCESS_SCOPE
-ARG VUE_APP_CLIENT_ID
-RUN npx vue-cli-service build
+RUN npm run build
 
 FROM nginx:stable-alpine as production
 COPY --from=build /src/dist /usr/share/nginx/html

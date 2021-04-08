@@ -18,25 +18,30 @@ export interface OvertimeStateModel {
   totalPayoutHours: number;
 }
 
-export interface CompansatedTransactions {
+export interface MappedOvertimeTransaction {
+  transaction: OvertimeEntry;
+  type: string;
+}
+
+interface CompansatedTransactions {
   date: Date;
   hours: number;
   taskId: number;
   compensationRate: number;
 }
 
-export interface AvailableHoursResponse {
+interface AvailableHoursResponse {
   availableHoursBeforeCompensation: number;
   availableHoursAfterCompensation: number;
   entries: CompansatedTransactions[];
 }
 
-export interface FlexHoursTransaction {
+interface FlexHoursTransaction {
   date: Date;
   hours: number;
 }
 
-export interface OvertimeEntry {
+interface OvertimeEntry {
   date: Date;
   hours: number;
   id?: number;
@@ -44,22 +49,17 @@ export interface OvertimeEntry {
   active?: boolean;
 }
 
-export interface MappedOvertimeTransaction {
-  transaction: OvertimeEntry;
-  type: string;
-}
-
-export interface FlexedHoursReponse {
+interface FlexedHoursReponse {
   totalHours: number;
   entries: FlexHoursTransaction[];
 }
 
-export interface PayoutReponse {
+interface PayoutReponse {
   totalHours: number;
   entries: PayoutTransaction[];
 }
 
-export interface PayoutTransaction {
+interface PayoutTransaction {
   id: number;
   date: Date;
   hoursBeforeCompRate: number;
@@ -166,12 +166,13 @@ const getters = {
       })
     );
     transactions.push(
-      ...state.overtimeState.flexTransactions
-        .map(transaction => {
-          return { type: "flex", transaction: transaction };
-        })
+      ...state.overtimeState.flexTransactions.map(transaction => {
+        return { type: "flex", transaction: transaction };
+      })
     );
-    return transactions.filter(transaction => transaction.transaction.hours != 0)
+    return transactions.filter(
+      transaction => transaction.transaction.hours != 0
+    );
   },
   getAvailableHours: (state: State) => {
     return state.overtimeState.totalHours;

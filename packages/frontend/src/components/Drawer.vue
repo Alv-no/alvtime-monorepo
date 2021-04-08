@@ -20,7 +20,7 @@
         :key="item.routeName"
         @click="navTo(item.routeName)"
       >
-        <md-icon>query_builder</md-icon>
+        <md-icon>{{ item.icon }}</md-icon>
 
         <span
           :class="{ active: $store.state.currentRoute.name === item.routeName }"
@@ -54,11 +54,24 @@ export default Vue.extend({
   data() {
     return {
       items: [
-        { text: "Timeføring", routeName: "hours" },
-        { text: "Favorittaktiviteter", routeName: "tasks" },
-        { text: "Overtid og avspasering", routeName: "accumulated-hours" },
+        { text: "Timeføring", routeName: "hours", icon: "query_builder" },
+        { text: "Aktiviteter", routeName: "tasks", icon: "local_activity" },
         { text: "Statistikk", routeName: "summarizedhours" },
-        { text: "Personal access tokens", routeName: "tokens" },
+        {
+          text: "Overtid og avspasering",
+          routeName: "accumulated-hours",
+          icon: "watch_later",
+        },
+        {
+          text: "Ferieoversikt",
+          routeName: "vacation",
+          icon: "wb_sunny",
+        },
+        {
+          text: "Personlige access token",
+          routeName: "tokens",
+          icon: "lock_open",
+        },
       ],
     };
   },
@@ -69,7 +82,7 @@ export default Vue.extend({
     },
 
     authText(): string {
-      return this.account ? "Logg ut" : "Logg in";
+      return this.account ? "Logg ut" : "Logg inn";
     },
 
     account(): Account {
@@ -96,7 +109,7 @@ export default Vue.extend({
     },
 
     navToAdminpanel() {
-      window.open(config.BASE_URL_ADMINPANEL + "/adminpanel");
+      window.open(config.BASE_URL_ADMINPANEL);
     },
   },
 });
@@ -104,7 +117,7 @@ export default Vue.extend({
 
 <style scoped>
 .close_button {
-  margin: 0.4rem 0.8rem;
+  margin: 0.4rem 0rem;
 }
 
 .active {

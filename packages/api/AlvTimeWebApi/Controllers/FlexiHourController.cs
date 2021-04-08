@@ -21,7 +21,7 @@ namespace AlvTimeWebApi.Controllers
         }
 
         [HttpGet("AvailableHours")]
-        [Authorize]
+        [Authorize(Policy = "AllowPersonalAccessToken")]
         public ActionResult<AvailableHoursDto> FetchAvailableHours()
         {
             var user = _userRetriever.RetrieveUser();
@@ -43,7 +43,7 @@ namespace AlvTimeWebApi.Controllers
         }
 
         [HttpGet("FlexedHours")]
-        [Authorize]
+        [Authorize(Policy = "AllowPersonalAccessToken")]
         public ActionResult<FlexedHoursDto> FetchFlexedHours()
         {
             var user = _userRetriever.RetrieveUser();
@@ -62,7 +62,7 @@ namespace AlvTimeWebApi.Controllers
         }
 
         [HttpGet("Payouts")]
-        [Authorize]
+        [Authorize(Policy = "AllowPersonalAccessToken")]
         public ActionResult<PayoutsDto> FetchPaidOvertime()
         {
             var user = _userRetriever.RetrieveUser();
@@ -96,16 +96,11 @@ namespace AlvTimeWebApi.Controllers
 
             var response = _storage.RegisterPaidOvertime(request, user.Id);
 
-            if (response is OkObjectResult)
+            return Ok(new GenericHourEntry
             {
-                return Ok(new
-                {
-                    Date = request.Date.ToDateOnly(),
-                    Value = request.Hours
-                });
-            }
-
-            return BadRequest(response.Value);
+                Date = response.Date,
+                Hours = response.HoursBeforeCompensation
+            });
         }
 
         [HttpDelete("Payouts")]
@@ -115,11 +110,6 @@ namespace AlvTimeWebApi.Controllers
             var user = _userRetriever.RetrieveUser();
 
             var response = _storage.CancelPayout(user.Id, payoutId);
-
-            if (response.Id == 0)
-            {
-                return BadRequest($"No payout cancelled for payout id {payoutId} for user: {user.Email}. Has the payout been locked?");
-            }
 
             return Ok(response);
         }
