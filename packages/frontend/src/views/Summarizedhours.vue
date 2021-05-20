@@ -1,5 +1,5 @@
 <template>
-  <div class="padding">
+  <CenterColumnWrapper>
     <md-table>
       <md-table-row>
         <md-table-head>Task</md-table-head>
@@ -12,53 +12,38 @@
       </md-table-row>
       <md-table-row v-for="row in getTimeEntriesSummed" :key="row.id">
         <md-table-cell>{{
-          row[0] ? row[0].project.name + " - " + row[0].name : "Missing name"
+          row.task
+            ? row.task.project.name + " - " + row.task.name
+            : "Ukjent navn"
         }}</md-table-cell>
         <md-table-cell
-          v-for="element in row.slice(1, 4)"
+          v-for="element in row.summarizedHours"
           :key="element.date.getMonth()"
         >
           {{ element.value }}
         </md-table-cell>
       </md-table-row>
     </md-table>
-  </div>
+  </CenterColumnWrapper>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import config from "@/config";
-import { FrontendTimentrie } from "@/store/timeEntries";
-import tasks, { Task } from "../store/tasks";
-import moment, { Moment, months } from "moment";
-
-interface TimeEntriesDateFormated {
-  [key: string]: string | number | Date | Object;
-  id: number;
-  value: number;
-  date: Date;
-  taskId: number;
-}
-
-interface TimeEntriesPerTask {
-  [key: number]: TimeEntriesDateFormated;
-}
-
-interface TimePerTaskSum {
-  id: number;
-  value: number;
-}
+import CenterColumnWrapper from "@/components/CenterColumnWrapper.vue";
+import { EntriesSummarizedPerMonthPerTask } from "@/store/timeEntries";
 
 export default Vue.extend({
   name: "Summarizedhours",
-
+  components: {
+    CenterColumnWrapper,
+  },
   computed: {
-    getTimeEntriesSummed() {
+    getTimeEntriesSummed(): EntriesSummarizedPerMonthPerTask {
       return this.$store.getters.getTimeEntriesSummarizedPerMonthPerTask;
     },
 
     getRelevantMonths() {
-      return this.$store.getters.getRelevantMonthsForStatiscts;
+      return this.$store.getters.getRelevantMonthsForStatistics;
     },
   },
 

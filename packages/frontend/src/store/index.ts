@@ -46,7 +46,7 @@ export const mutations = {
   ...app.mutations,
 };
 
-const getters = {
+export const getters = {
   ...task.getters,
   ...swiper.getters,
   ...auth.getters,

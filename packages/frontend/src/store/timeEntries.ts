@@ -1,6 +1,6 @@
 import { State } from "./index";
 import { ActionContext } from "vuex";
-import { debounce } from "lodash";
+import { debounce, entries } from "lodash";
 import config from "@/config";
 import { adAuthenticatedFetch } from "@/services/auth";
 import { Task } from "./tasks";
@@ -18,24 +18,34 @@ export interface FrontendTimentrie {
   taskId: number;
 }
 
-export interface TimeEntrieMap {
+export interface EntriesSummarizedPerMonthPerTask {
+  task: Task;
+  summarizedHours: SummedHoursPrMonth[];
+}
+
+interface SummedHoursPrMonth {
+  date: Date;
+  value: number;
+}
+
+interface TimeEntrieMap {
   [key: string]: TimeEntrieObj;
 }
 
-export interface TimeEntrieObj {
+interface TimeEntrieObj {
   value: string;
   id: number;
 }
 
-export interface ServerSideTimeEntrie {
+interface ServerSideTimeEntrie {
   id: number;
   date: string;
   value: number;
   taskId: number;
 }
 
-export interface TimeEntriesDateFormated {
-  [key: string]: string | number | Date | Object;
+interface TimeEntriesDateFormated {
+  [key: string]: number | Date;
   id: number;
   value: number;
   date: Date;
@@ -53,7 +63,7 @@ const getters = {
     return monthSumPrTask(state.timeEntries, state.tasks);
   },
 
-  getRelevantMonthsForStatiscts: (state: State) => {
+  getRelevantMonthsForStatistics: (state: State) => {
     return getRelevantMonths();
   },
 };
@@ -254,90 +264,95 @@ function getRelevantMonths(): Date[] {
 function filterTimeEntriesByRelevantMonths(
   allTimeEntriesAllTasks: TimeEntriesDateFormated[][]
 ) {
-  return allTimeEntriesAllTasks.map(timeEntriesSingleTask => {
-    return timeEntriesSingleTask.filter(x => {
-      return getRelevantMonths().some(y => {
-        if (y.getMonth() == x.date.getMonth()) {
-          return y;
+  return allTimeEntriesAllTasks.map(allTimeEntriesForOneTask => {
+    return allTimeEntriesForOneTask.filter(singleTimeEntry => {
+      return getRelevantMonths().some(month => {
+        if (month.getMonth() == singleTimeEntry.date.getMonth()) {
+          return month;
         }
       });
     });
   });
 }
 
-function convertStringToDateAndValueToNumber(
-  timeEntries: FrontendTimentrie[] | null
-) {
-  var newArray: TimeEntriesDateFormated[] = timeEntries
-    ? timeEntries.map((x: FrontendTimentrie) => {
-        let newObj = {
-          id: x.id,
-          value: Number(x.value),
-          taskId: x.taskId,
-          date: new Date(x.date),
-        };
-        return newObj;
-      })
-    : [];
-  return newArray;
+function convertStringToDateAndValueToNumber(timeEntries: FrontendTimentrie[]) {
+  const mappedTimeEntries = timeEntries.map(entry => ({
+    id: entry.id,
+    value: Number(entry.value),
+    taskId: entry.taskId,
+    date: new Date(entry.date),
+  }));
+
+  return mappedTimeEntries;
 }
 
 function splitIntoTasks(
   timeEntriesFormated: TimeEntriesDateFormated[]
 ): TimeEntriesDateFormated[][] {
-  var uniqueTasks = [...new Set(timeEntriesFormated.map(x => x.taskId))];
+  const uniqueTaskIds = [...new Set(timeEntriesFormated.map(x => x.taskId))];
 
-  var hoursPrTask = uniqueTasks.map(x => {
-    return timeEntriesFormated.filter(y => y.taskId === x);
-  });
+  const timeEntriesSplitIntoTasks = [];
+  for (let taskId of uniqueTaskIds) {
+    const timeEntries = timeEntriesFormated.filter(
+      timeEntrie => timeEntrie.taskId === taskId
+    );
+    timeEntriesSplitIntoTasks.push(timeEntries);
+  }
 
-  return hoursPrTask;
+  return timeEntriesSplitIntoTasks;
 }
 
-function monthSum(x: any): any {
-  let initArray = getRelevantMonths().map(x => {
-    return {
-      date: x,
-      value: 0,
-    };
-  });
-  var value = x.reduce((acc: any, cur: any) => {
-    let existItem = acc.find(
-      (x: TimeEntriesDateFormated) => cur.date.getMonth() == x.date.getMonth()
-    );
-    if (existItem) {
-      existItem.value += cur.value;
-    } else {
-      acc.push(cur);
+function monthSum(relevantTimeEntriesSingleTask: TimeEntriesDateFormated[]) {
+  const summedHoursPerMonth: SummedHoursPrMonth[] = getRelevantMonths().map(
+    month => {
+      return {
+        date: month,
+        value: 0,
+      };
     }
-    return acc;
-  }, initArray);
-  return value;
+  );
+  for (let timeEntrie of relevantTimeEntriesSingleTask) {
+    const monthOfEntry = summedHoursPerMonth.filter(
+      x => x.date.getMonth() === timeEntrie.date.getMonth()
+    )[0];
+    if (monthOfEntry) {
+      monthOfEntry.value += timeEntrie.value;
+    } else {
+      summedHoursPerMonth.push({
+        date: timeEntrie.date,
+        value: timeEntrie.value,
+      });
+    }
+  }
+  return summedHoursPerMonth;
 }
 
 function monthSumPrTask(
   allTimeEntries: FrontendTimentrie[] | null,
   allTasks: Task[]
 ) {
-  const timeEntriesFormated = convertStringToDateAndValueToNumber(
-    allTimeEntries
-  );
-  const timeEntriesSplitIntoTasks = splitIntoTasks(timeEntriesFormated);
-  const onlyRelevantTimeEntries = filterTimeEntriesByRelevantMonths(
-    timeEntriesSplitIntoTasks
-  );
-  var values = onlyRelevantTimeEntries.map(x => {
-    if (Object.keys(x).length !== 0) {
-      var taskForArray = allTasks.filter((task: Task) => {
-        if (task !== undefined && task.id === x[0].taskId) {
-          return [task];
-        }
-      });
-      return taskForArray.concat(monthSum(x));
+  if (allTimeEntries) {
+    const timeEntriesFormated = convertStringToDateAndValueToNumber(
+      allTimeEntries
+    );
+    const timeEntriesSplitByTask = splitIntoTasks(timeEntriesFormated);
+    const onlyRelevantTimeEntries = filterTimeEntriesByRelevantMonths(
+      timeEntriesSplitByTask
+    );
+
+    const entriesSummarizedPerMonthPerTask: EntriesSummarizedPerMonthPerTask[] = [];
+    for (let relevantTimeEntriesForOneTask of onlyRelevantTimeEntries) {
+      if (relevantTimeEntriesForOneTask.length > 0) {
+        entriesSummarizedPerMonthPerTask.push({
+          task: allTasks.filter(
+            task => task.id === relevantTimeEntriesForOneTask[0].taskId
+          )[0],
+          summarizedHours: monthSum(relevantTimeEntriesForOneTask),
+        });
+      }
     }
-  });
-  var finalValues = values.filter((x: any) => {
-    return x;
-  });
-  return finalValues;
+    return entriesSummarizedPerMonthPerTask;
+  } else {
+    return [];
+  }
 }
