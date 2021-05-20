@@ -1,8 +1,9 @@
 import { State } from "./index";
 import { ActionContext } from "vuex";
-import { debounce } from "lodash";
+import { debounce, entries } from "lodash";
 import config from "@/config";
 import { adAuthenticatedFetch } from "@/services/auth";
+import { Task } from "./tasks";
 
 export interface TimeEntrieState {
   timeEntries: FrontendTimentrie[] | null;
@@ -17,19 +18,37 @@ export interface FrontendTimentrie {
   taskId: number;
 }
 
-export interface TimeEntrieMap {
+export interface EntriesSummarizedPerMonthPerTask {
+  task: Task;
+  summarizedHours: SummedHoursPrMonth[];
+}
+
+interface SummedHoursPrMonth {
+  date: Date;
+  value: number;
+}
+
+interface TimeEntrieMap {
   [key: string]: TimeEntrieObj;
 }
 
-export interface TimeEntrieObj {
+interface TimeEntrieObj {
   value: string;
   id: number;
 }
 
-export interface ServerSideTimeEntrie {
+interface ServerSideTimeEntrie {
   id: number;
   date: string;
   value: number;
+  taskId: number;
+}
+
+interface TimeEntriesDateFormated {
+  [key: string]: number | Date;
+  id: number;
+  value: number;
+  date: Date;
   taskId: number;
 }
 
@@ -37,6 +56,16 @@ const state = {
   timeEntries: null,
   pushQueue: [],
   timeEntriesMap: {},
+};
+
+const getters = {
+  getTimeEntriesSummarizedPerMonthPerTask: (state: State) => {
+    return monthSumPrTask(state.timeEntries, state.tasks);
+  },
+
+  getRelevantMonthsForStatistics: (state: State) => {
+    return getRelevantMonths();
+  },
 };
 
 const mutations = {
@@ -139,6 +168,7 @@ export default {
   state,
   mutations,
   actions,
+  getters,
 };
 
 function updateTimeEntrieMap(
@@ -218,4 +248,111 @@ function updateTimeEntries(state: State, paramEntries: FrontendTimentrie[]) {
     newTimeEntries = updateArrayWith(newTimeEntries, paramEntrie);
   }
   state.timeEntries = newTimeEntries;
+}
+
+function getRelevantMonths(): Date[] {
+  const today = new Date();
+  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1);
+  const twoMonthsAgo = new Date(
+    lastMonth.getFullYear(),
+    lastMonth.getMonth() - 1
+  );
+  const relevantMonths = [twoMonthsAgo, lastMonth, today];
+  return relevantMonths;
+}
+
+function filterTimeEntriesByRelevantMonths(
+  allTimeEntriesAllTasks: TimeEntriesDateFormated[][]
+) {
+  return allTimeEntriesAllTasks.map(allTimeEntriesForOneTask => {
+    return allTimeEntriesForOneTask.filter(singleTimeEntry => {
+      return getRelevantMonths().some(month => {
+        if (month.getMonth() == singleTimeEntry.date.getMonth()) {
+          return month;
+        }
+      });
+    });
+  });
+}
+
+function convertStringToDateAndValueToNumber(timeEntries: FrontendTimentrie[]) {
+  const mappedTimeEntries = timeEntries.map(entry => ({
+    id: entry.id,
+    value: Number(entry.value),
+    taskId: entry.taskId,
+    date: new Date(entry.date),
+  }));
+
+  return mappedTimeEntries;
+}
+
+function splitIntoTasks(
+  timeEntriesFormated: TimeEntriesDateFormated[]
+): TimeEntriesDateFormated[][] {
+  const uniqueTaskIds = [...new Set(timeEntriesFormated.map(x => x.taskId))];
+
+  const timeEntriesSplitIntoTasks = [];
+  for (let taskId of uniqueTaskIds) {
+    const timeEntries = timeEntriesFormated.filter(
+      timeEntrie => timeEntrie.taskId === taskId
+    );
+    timeEntriesSplitIntoTasks.push(timeEntries);
+  }
+
+  return timeEntriesSplitIntoTasks;
+}
+
+function monthSum(relevantTimeEntriesSingleTask: TimeEntriesDateFormated[]) {
+  const summedHoursPerMonth: SummedHoursPrMonth[] = getRelevantMonths().map(
+    month => {
+      return {
+        date: month,
+        value: 0,
+      };
+    }
+  );
+  for (let timeEntrie of relevantTimeEntriesSingleTask) {
+    const monthOfEntry = summedHoursPerMonth.filter(
+      x => x.date.getMonth() === timeEntrie.date.getMonth()
+    )[0];
+    if (monthOfEntry) {
+      monthOfEntry.value += timeEntrie.value;
+    } else {
+      summedHoursPerMonth.push({
+        date: timeEntrie.date,
+        value: timeEntrie.value,
+      });
+    }
+  }
+  return summedHoursPerMonth;
+}
+
+function monthSumPrTask(
+  allTimeEntries: FrontendTimentrie[] | null,
+  allTasks: Task[]
+) {
+  if (allTimeEntries) {
+    const timeEntriesFormated = convertStringToDateAndValueToNumber(
+      allTimeEntries
+    );
+    const timeEntriesSplitByTask = splitIntoTasks(timeEntriesFormated);
+    const onlyRelevantTimeEntries = filterTimeEntriesByRelevantMonths(
+      timeEntriesSplitByTask
+    );
+
+    const entriesSummarizedPerMonthPerTask: EntriesSummarizedPerMonthPerTask[] = [];
+    for (let relevantTimeEntriesForOneTask of onlyRelevantTimeEntries) {
+      if (relevantTimeEntriesForOneTask.length > 0) {
+        entriesSummarizedPerMonthPerTask.push({
+          task: allTasks.filter(
+            task => task.id === relevantTimeEntriesForOneTask[0].taskId
+          )[0],
+          summarizedHours: monthSum(relevantTimeEntriesForOneTask),
+        });
+      }
+    }
+    return entriesSummarizedPerMonthPerTask;
+  } else {
+    return [];
+  }
 }
