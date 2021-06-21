@@ -250,6 +250,11 @@ function updateTimeEntries(state: State, paramEntries: FrontendTimentrie[]) {
   state.timeEntries = newTimeEntries;
 }
 
+function getRelevantYear() {
+  const today = new Date();
+  return today.getFullYear();
+}
+
 function getRelevantMonths(): Date[] {
   const today = new Date();
   const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1);
@@ -267,7 +272,10 @@ function filterTimeEntriesByRelevantMonths(
   return allTimeEntriesAllTasks.map(allTimeEntriesForOneTask => {
     return allTimeEntriesForOneTask.filter(singleTimeEntry => {
       return getRelevantMonths().some(month => {
-        if (month.getMonth() == singleTimeEntry.date.getMonth()) {
+        if (
+          month.getMonth() == singleTimeEntry.date.getMonth() &&
+          getRelevantYear() === singleTimeEntry.date.getFullYear()
+        ) {
           return month;
         }
       });
