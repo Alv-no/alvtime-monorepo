@@ -40,6 +40,9 @@ export default async function createCommands(
     registerWeek() {
       registerWeek(state);
     },
+    registerVacation() {
+      registerVacation(state);
+    }
     admin() {
       admin(state);
     },
