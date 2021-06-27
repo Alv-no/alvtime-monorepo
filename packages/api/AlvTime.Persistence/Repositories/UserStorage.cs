@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using AlvTime.Business.AccessToken.PersonalAccessToken;
+using AlvTime.Business.AccessToken;
 using Microsoft.EntityFrameworkCore;
+using User = AlvTime.Persistence.DataBaseModels.User;
 
 namespace AlvTime.Persistence.Repositories
 {

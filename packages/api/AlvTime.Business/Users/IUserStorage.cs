@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AlvTime.Business.AccessToken.PersonalAccessToken;
+using AlvTime.Business.AccessToken;
 
 namespace AlvTime.Business.Users
 {
@@ -10,7 +10,7 @@ namespace AlvTime.Business.Users
         IEnumerable<UserResponseDto> GetUser(UserQuerySearch criterias);
         void AddUser(CreateUserDto user);
         void UpdateUser(CreateUserDto user);
-        Task<AccessToken.User> GetUserFromToken(Token token);
+        Task<User> GetUserFromToken(Token token);
     }
 
     public class UserQuerySearch
