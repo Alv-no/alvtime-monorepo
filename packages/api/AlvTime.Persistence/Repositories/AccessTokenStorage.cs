@@ -1,5 +1,4 @@
-﻿using AlvTime.Business.AccessToken;
-using AlvTime.Persistence.DataBaseModels;
+﻿using AlvTime.Persistence.DataBaseModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +13,14 @@ namespace AlvTime.Persistence.Repositories
     public class AccessTokenStorage : IAccessTokenStorage
     {
         private readonly AlvTime_dbContext _dbContext;
-        private readonly IUserContext _userContext;
         private readonly User _user;
         private readonly IMapper _autoMapper;
 
         public AccessTokenStorage(AlvTime_dbContext dbContext, IUserContext userContext, IMapper autoMapper)
         {
             _dbContext = dbContext;
-            _userContext = userContext;
             _autoMapper = autoMapper;
-            _user = _dbContext.User.First(user => user.Email.ToLower().Equals(_userContext.Email.ToLower()));
+            _user = _dbContext.User.First(user => user.Email.ToLower().Equals(userContext.Email.ToLower()));
         }
 
         public AccessTokenResponseDto CreateLifetimeToken(string friendlyName)

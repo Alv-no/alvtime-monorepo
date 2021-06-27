@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using AlvTime.Business.DTOs;
 
-namespace AlvTime.Business.AccessToken
+namespace AlvTime.Business.Interfaces
 {
     public interface IAccessTokenStorage
     {

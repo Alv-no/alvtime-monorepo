@@ -5,7 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using AlvTime.Business.AccessToken;
+using AlvTime.Business.Models;
 using AlvTime.Business.Users;
 
 namespace AlvTimeWebApi.Authentication.PersonalAccessToken
@@ -50,7 +50,7 @@ namespace AlvTimeWebApi.Authentication.PersonalAccessToken
         private static AuthenticationTicket CreateTicket(Claim[] claims)
             => new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity(claims, "PersonalAccessToken")), "PersonalAccessTokenScheme");
 
-        private static Claim[] CreateClaims(AlvTime.Business.AccessToken.User user)
+        private static Claim[] CreateClaims(User user)
             => new Claim[]
             {
                 new Claim("preferred_username", user.Email),

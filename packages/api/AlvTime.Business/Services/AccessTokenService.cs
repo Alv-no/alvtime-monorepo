@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using AlvTime.Business.AccessToken;
+using AlvTime.Business.Interfaces;
 using AccessTokenResponseDto = AlvTime.Business.DTOs.AccessTokenResponseDto;
 
 namespace AlvTime.Business.Services
