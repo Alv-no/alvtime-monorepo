@@ -18,7 +18,6 @@ using AlvTime.Business.TimeEntries;
 using AlvTime.Business.Users;
 using AlvTime.Persistence.Repositories;
 using AlvTimeWebApi.Controllers.Utils;
-using AlvTimeWebApi.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,7 +27,6 @@ namespace AlvTimeWebApi
     {
         public static void AddAlvtimeServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IPersonalAccessTokenStorage, PersonalAccessTokenRepository>();
             services.AddTransient<IUserStorage, UserStorage>();
             services.AddHttpContextAccessor();
             services.AddScoped<RetrieveUsers>();

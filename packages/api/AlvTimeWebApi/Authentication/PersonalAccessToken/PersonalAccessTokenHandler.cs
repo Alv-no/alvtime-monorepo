@@ -1,6 +1,4 @@
-﻿using AlvTime.Business.AccessToken;
-using AlvTime.Business.AccessToken.PersonalAccessToken;
-using AlvTime.Persistence.DataBaseModels;
+﻿using AlvTime.Business.AccessToken.PersonalAccessToken;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,18 +6,19 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using AlvTime.Persistence.Repositories;
 
 namespace AlvTimeWebApi.Authentication.PersonalAccessToken
 {
     public class PersonalAccessTokenHandler : AuthenticationHandler<PersonalAccessTokenOptions>
     {
-        private readonly IPersonalAccessTokenStorage _storage;
+        private readonly UserStorage _storage;
 
         public PersonalAccessTokenHandler(
             IOptionsMonitor<PersonalAccessTokenOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            IPersonalAccessTokenStorage storage,
+            UserStorage storage,
             ISystemClock clock) : base(options, logger, encoder, clock)
         {
             _storage = storage;

@@ -20,10 +20,14 @@ namespace AlvTime.Business.Services
 
         public IEnumerable<AccessTokenResponseDto> DeleteActiveTokens(IEnumerable<int> tokenIds)
         {
+            var response = new List<AccessTokenResponseDto>();
+
             foreach (var token in tokenIds)
             {
-                yield return _tokenStorage.DeleteActiveTokens(token);
+                response.Add(_tokenStorage.DeleteActiveTokens(token));
             }
+
+            return response;
         }
 
         public IEnumerable<AccessTokenResponseDto> GetActiveTokens()
