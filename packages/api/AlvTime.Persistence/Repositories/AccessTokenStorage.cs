@@ -2,69 +2,64 @@
 using AlvTime.Persistence.DataBaseModels;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using AlvTime.Business.DTOs;
+using AlvTime.Business.Interfaces;
+using AlvTime.Business.Utils;
+using AutoMapper;
+using User = AlvTime.Persistence.DataBaseModels.User;
 
 namespace AlvTime.Persistence.Repositories
 {
     public class AccessTokenStorage : IAccessTokenStorage
     {
-        private readonly AlvTime_dbContext _context;
+        private readonly AlvTime_dbContext _dbContext;
+        private readonly IUserContext _userContext;
+        private readonly User _user;
+        private readonly IMapper _autoMapper;
 
-        public AccessTokenStorage(AlvTime_dbContext context)
+        public AccessTokenStorage(AlvTime_dbContext dbContext, IUserContext userContext, IMapper autoMapper)
         {
-            _context = context;
+            _dbContext = dbContext;
+            _userContext = userContext;
+            _autoMapper = autoMapper;
+            _user = _dbContext.User.First(user => user.Email.ToLower().Equals(_userContext.Email.ToLower()));
         }
 
-        public AccessTokenResponseDto CreateLifetimeToken(string friendlyName, int userId)
+        public AccessTokenResponseDto CreateLifetimeToken(string friendlyName)
         {
-            var uuid = Guid.NewGuid().ToString();
-
             var accessToken = new AccessTokens
             {
-                UserId = userId,
-                Value = uuid,
+                UserId = _user.Id,
+                Value = Guid.NewGuid().ToString(),
                 ExpiryDate = DateTime.UtcNow.AddMonths(6),
                 FriendlyName = friendlyName
             };
 
-            _context.AccessTokens.Add(accessToken);
-            _context.SaveChanges();
+            _dbContext.AccessTokens.Add(accessToken);
+            _dbContext.SaveChanges();
 
-            return new AccessTokenResponseDto
-            {
-                Token = uuid,
-                ExpiryDate = DateTime.UtcNow.AddMonths(6).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-            };
+            return new AccessTokenResponseDto(accessToken.Id, accessToken.Value, accessToken.ExpiryDate.ToDateOnly(), accessToken.FriendlyName);
         }
 
-        public AccessTokenFriendlyNameResponseDto DeleteActiveTokens(int tokenId, int userId)
+        public AccessTokenResponseDto DeleteActiveTokens(int tokenId)
         {
-            var token = _context.AccessTokens
-                .FirstOrDefault(t => t.Id == tokenId && t.UserId == userId);
+            var token = _dbContext.AccessTokens
+                .FirstOrDefault(t => t.Id == tokenId && t.UserId == _user.Id);
 
             token.ExpiryDate = DateTime.UtcNow;
-            _context.SaveChanges();
+            _dbContext.SaveChanges();
 
-            return new AccessTokenFriendlyNameResponseDto
-            {
-                Id = token.Id,
-                FriendlyName = token.FriendlyName,
-                ExpiryDate = token.ExpiryDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-            };
+            return _autoMapper.Map<AccessTokenResponseDto>(token);
         }
 
-        public IEnumerable<AccessTokenFriendlyNameResponseDto> GetActiveTokens(int userId)
+        public IEnumerable<AccessTokenResponseDto> GetActiveTokens()
         {
-            return _context.AccessTokens
-                .Where(x => x.UserId == userId && x.ExpiryDate >= DateTime.UtcNow)
-                .Select(x => new AccessTokenFriendlyNameResponseDto
-                {
-                    Id = x.Id,
-                    FriendlyName = x.FriendlyName,
-                    ExpiryDate = x.ExpiryDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                })
+            var tokens = _dbContext.AccessTokens
+                .Where(token => token.UserId == _user.Id && token.ExpiryDate >= DateTime.UtcNow)
                 .ToList();
+
+            return _autoMapper.Map<List<AccessTokenResponseDto>>(tokens);
         }
     }
 }

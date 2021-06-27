@@ -13,10 +13,7 @@ namespace AlvTimeWebApi.AutoMapperProfiles
             CreateMap<AccessTokenResponseDto, AccessTokenCreatedViewModel>();
             CreateMap<AccessTokenResponseDto, AccessTokenFriendlyNameViewModel>();
             CreateMap<AccessTokens, AccessTokenResponseDto>()
-                .ForMember(x => x.ExpiryDate,
-                    opt => opt.MapFrom(src => src.ExpiryDate.ToDateOnly()))
-                .ForMember(x => x.Token,
-                opt => opt.MapFrom(src => src.Value))
+                .ForCtorParam("ExpiryDate", opt => opt.MapFrom(src => src.ExpiryDate.ToDateOnly()))
                 .ForCtorParam("Token", opt => opt.MapFrom(src => src.Value));
         }
     }

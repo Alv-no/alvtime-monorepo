@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using AlvTime.Business.DTOs;
 
 namespace AlvTime.Business.AccessToken
 {
     public interface IAccessTokenStorage
     {
-        IEnumerable<AccessTokenFriendlyNameResponseDto> GetActiveTokens(int userId);
-        AccessTokenFriendlyNameResponseDto DeleteActiveTokens(int tokenId, int userId);
-        AccessTokenResponseDto CreateLifetimeToken(string friendlyName, int userId);
+        IEnumerable<AccessTokenResponseDto> GetActiveTokens();
+        AccessTokenResponseDto DeleteActiveTokens(int tokenId);
+        AccessTokenResponseDto CreateLifetimeToken(string friendlyName);
     }
 }

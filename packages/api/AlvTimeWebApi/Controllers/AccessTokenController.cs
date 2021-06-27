@@ -1,8 +1,11 @@
-﻿using AlvTime.Business.AccessToken;
-using AlvTimeWebApi.Controllers.Utils;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
+using AlvTime.Business.DTOs;
+using AlvTime.Business.Services;
+using AlvTimeWebApi.ViewModels;
+using AutoMapper;
 
 namespace AlvTimeWebApi.Controllers
 {
@@ -10,47 +13,42 @@ namespace AlvTimeWebApi.Controllers
     [ApiController]
     public class AccessTokenController : Controller
     {
-        private readonly IAccessTokenStorage _storage;
-        private RetrieveUsers _userRetriever;
+        private readonly AccessTokenService _tokenService;
+        private readonly IMapper _autoMapper;
 
-        public AccessTokenController(RetrieveUsers userRetriever, IAccessTokenStorage storage)
+        public AccessTokenController(AccessTokenService tokenService, IMapper autoMapper)
         {
-            _storage = storage;
-            _userRetriever = userRetriever;
+            _tokenService = tokenService;
+            _autoMapper = autoMapper;
         }
 
         [HttpPost("AccessToken")]
         [Authorize]
-        public ActionResult<AccessTokenResponseDto> CreateLifetimeToken([FromBody] AccessTokenRequestDto request)
+        public ActionResult<AccessTokenCreatedViewModel> CreateLifetimeToken([FromBody] AccessTokenRequestDto request)
         {
-            var user = _userRetriever.RetrieveUser();
+            var accessToken = _autoMapper.Map<AccessTokenCreatedViewModel>(_tokenService.CreateLifeTimeToken(request.FriendlyName));
 
-            return Ok(_storage.CreateLifetimeToken(request.FriendlyName, user.Id));
+            return Ok(accessToken);
         }
 
         [HttpDelete("AccessToken")]
         [Authorize]
-        public ActionResult<IEnumerable<AccessTokenFriendlyNameResponseDto>> DeleteAccessToken([FromBody] IEnumerable<DeleteAccessTokenDto> tokenIds)
+        public ActionResult<IEnumerable<AccessTokenFriendlyNameViewModel>> DeleteAccessToken([FromBody] IEnumerable<AccessTokenDeleteDto> tokenIds)
         {
-            var user = _userRetriever.RetrieveUser();
+            var accessToken =
+                _autoMapper.Map<List<AccessTokenFriendlyNameViewModel>>(
+                    _tokenService.DeleteActiveTokens(tokenIds.Select(tokenIds => tokenIds.TokenId)));
 
-            var response = new List<AccessTokenFriendlyNameResponseDto>();
-
-            foreach (var token in tokenIds)
-            {
-                response.Add(_storage.DeleteActiveTokens(token.TokenId, user.Id));
-            }
-
-            return Ok(response);
+            return Ok(accessToken);
         }
 
         [HttpGet("ActiveAccessTokens")]
         [Authorize]
-        public ActionResult<IEnumerable<AccessTokenFriendlyNameResponseDto>> FetchFriendlyNames()
+        public ActionResult<IEnumerable<AccessTokenFriendlyNameViewModel>> FetchFriendlyNames()
         {
-            var user = _userRetriever.RetrieveUser();
+            var accessTokens = _autoMapper.Map<List<AccessTokenFriendlyNameViewModel>>(_tokenService.GetActiveTokens());
 
-            return Ok(_storage.GetActiveTokens(user.Id));
+            return Ok(accessTokens);
         }
     }
 }

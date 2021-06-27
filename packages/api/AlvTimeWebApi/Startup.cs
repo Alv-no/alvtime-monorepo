@@ -1,9 +1,12 @@
+using AlvTime.Business.DTOs;
 using AlvTime.Business.Options;
 using AlvTime.Persistence.DataBaseModels;
 using AlvTimeWebApi.Authentication;
 using AlvTimeWebApi.Authorization;
 using AlvTimeWebApi.Cors;
 using AlvTimeWebApi.ErrorHandling;
+using AlvTimeWebApi.ViewModels;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +42,7 @@ namespace AlvTimeWebApi
             services.AddAlvtimeAuthentication(Configuration);
             services.Configure<TimeEntryOptions>(Configuration.GetSection("TimeEntryOptions"));
             services.AddAlvtimeAuthorization();
+            services.AddAutoMapper(typeof(Startup));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Example API", Version = "v1" });

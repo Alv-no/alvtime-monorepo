@@ -11,10 +11,9 @@ namespace Tests.UnitTests.AutoMapper
     public class AccessTokenMappingTests
     {
         [Fact]
-        public void AccessTokenToAccessTokenResponseDto()
+        public void AccessTokenToAccessTokenResponseDto_PropertiesShouldMatch()
         {
             var config = new MapperConfiguration(cfg => cfg.AddProfile<AccessTokenProfile>());
-            config.AssertConfigurationIsValid();
             var mapper = config.CreateMapper();
 
             var accessToken = new AccessTokens
@@ -29,6 +28,8 @@ namespace Tests.UnitTests.AutoMapper
             var mappedToken = mapper.Map<AccessTokenResponseDto>(accessToken);
 
             Assert.Equal(mappedToken.Token, accessToken.Value);
+            Assert.Equal(mappedToken.ExpiryDate, accessToken.ExpiryDate.ToDateOnly());
+            Assert.Equal(mappedToken.FriendlyName, accessToken.FriendlyName);
         }
     }
 }
