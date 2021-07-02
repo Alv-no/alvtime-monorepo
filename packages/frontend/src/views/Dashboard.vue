@@ -1,8 +1,16 @@
 <template>
   <CenterColumnWrapper>
+<<<<<<< HEAD
     <h1>Her kan du se oversikt over dine registrerte timer for {{ year }}</h1>
     <div class="chart-container">
       <Chart class="chart" :data="monthSums"></Chart>
+=======
+    <h1>Halla, dashboard her</h1>
+    <div class="chart-container">
+      <Chart class="chart" :data="monthSums"></Chart>
+      <Chart class="chart"></Chart>
+      <Chart class="chart"></Chart>
+>>>>>>> 2ce9a6dd5688e1f6489b2cfa22b569b7ef2a49e5
     </div>
   </CenterColumnWrapper>
 </template>
@@ -22,11 +30,14 @@ export default Vue.extend({
   beforeCreate() {
     this.$store.dispatch("FETCH_WEEK_ENTRIES");
   },
+<<<<<<< HEAD
   data() {
     return {
       year: moment().year(),
     };
   },
+=======
+>>>>>>> 2ce9a6dd5688e1f6489b2cfa22b569b7ef2a49e5
   computed: {
     monthSums() {
       const timeEntries = this.$store.state.timeEntries;
@@ -55,7 +66,11 @@ export default Vue.extend({
 }
 
 .chart {
+<<<<<<< HEAD
   width: 50%;
+=======
+  width: 30%;
+>>>>>>> 2ce9a6dd5688e1f6489b2cfa22b569b7ef2a49e5
   margin: 0 10px;
 }
 </style>

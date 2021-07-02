@@ -72,6 +72,11 @@ router.beforeEach(async (to, _from, next) => {
   }
 });
 
+<<<<<<< HEAD
+=======
+function is() { }
+
+>>>>>>> 2ce9a6dd5688e1f6489b2cfa22b569b7ef2a49e5
 router.afterEach(route => {
   store.commit("SET_CURRENT_ROUTE", route);
 });
